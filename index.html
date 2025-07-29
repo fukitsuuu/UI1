@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Logistic 2</title>
+    <link rel="icon" href="images/logo2.png" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media only screen and (max-width: 767px) {
+            .main-content {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+        }    .topnavbar {
+        background-color: #1f2937ff;
+        color: #ffffffff;
+    }
+    .sidenavbar {
+        background-color: #1f2937ff;
+        color: #d6d6d6ff;
+    }
+    .sidebar-collapsed .sidebar-label-wrapper {
+        max-width: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        align-items: center;
+    }
+    .sidebar-label-wrapper {
+        max-width: 100%;
+        opacity: 1;
+        visibility: visible;
+        white-space: nowrap;
+        text-align: start;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .sidebar-icon {
+        width: 1.5rem;
+        min-width: 1.5rem;
+        text-align: center;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .tooltip-float {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.1s ease;
+        z-index: 9999;
+    }
+    .scrollbar-hidden {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-gutter-stable {
+        scrollbar-gutter: stable;
+    }
+    .animated-dropdown {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.1s ease;
+    }
+    .animated-dropdown.open {
+        max-height: 500px;
+    }
+    .dr-notification {
+        width: 500px;
+        height: 600px;
+    }
+    @media only screen and (max-width: 767px) {
+        .topnavbar {
+            background-color: #1f2937ff;
+            color: #ffffffff;
+        }
+        .sidenavbar {
+            background-color: #1f2937ff;
+            color: #d6d6d6ff;
+        }
+        #sidebar-wrapper {
+            width: 100%;
+        }
+        .dr-notification {
+            width: 360px;
+            height: 600px;
+            margin-top: 30px;
+            left: 50% !important;
+            transform: translateX(-73%) !important;
+            max-width: 25rem;
+        }
+    }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+
+<!-- Top Navbar -->
+<div class="topnavbar fixed top-0 left-0 w-full h-20 border-b border-gray-600 z-60 shadow-sm select-none">
+  <div class="flex items-center justify-start h-full px-4">
+        <button id="mobileSidebarToggle" class="block md:hidden focus:outline-none">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <button id="collapseSidebar" class="hidden md:block focus:outline-none ml-4">
+            <svg id="collapseIcon" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
+        <div class="flex items-center space-x-3 ml-5 md:ml-20">
+            <img src="images/logo.png" alt="Logo" class="h-16 object-contain" onerror="this.style.display='none'">
+        </div>
+
+        <div class="flex items-center space-x-6 ml-auto mr-4 md:mr-20">
+            <div class="relative group">
+                <button onclick="toggleNotifications()" class="relative focus:outline-none h-5 w-5">
+                    <i class="fas fa-bell text-lg"></i>
+                    <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-600"></span>
+                </button>
+                <div id="notificationDropdown" class="hidden absolute right-0 mt-2 bg-white border border-gray-200 rounded shadow-lg z-50 dr-notification">
+                    <div class="flex items-center justify-center p-4 text-sm text-gray-600 h-full">
+                        <p id="notificationContent" class="text-center">No notifications</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <button id="userDropdownBtn" onclick="toggleUserDropdown()" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold focus:outline-none">
+                    U
+                </button>
+                <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50 text-sm">
+                    <div class="px-4 pt-2 text-gray-800 font-semibold cursor-default">User</div>
+                    <div class="px-4 text-gray-500 cursor-default">System Administrator</div>
+                    <hr class="my-1 border-gray-200">
+                    <a href="profile.html" class="block px-4 py-2 hover:bg-gray-100 text-gray-800">Profile</a>
+                    <a href="logout.html" class="block px-4 py-2 hover:bg-red-100 text-red-600 font-semibold">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="sidebarTooltip" class="tooltip-float"></div>
+
+<!-- Sidebar -->
+<div id="sidebar-wrapper" class="sidenavbar fixed top-20 left-0 h-full w-80 transform -translate-x-full md:translate-x-0 z-50 px-2 border-r text-black transition-transform duration-300 ease-in-out overflow-y-auto overflow-x-hidden scrollbar-hidden scrollbar-gutter-stable select-none">
+    <nav class="space-y-1 mt-10 mb-10 pr-2" id="sidebar-nav">
+<!-- Dashboard -->
+        <a href="#" data-label="Dashboard" class="flex items-center px-3 py-2 rounded hover:bg-gray-700 <?= $current_page === 'dashboard.php' ? 'bg-white/30' : ''; ?>">
+            <div class="w-full flex items-center">
+                <div class="sidebar-icon pl-2">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="sidebar-label-wrapper ml-3">
+                    <span class="sidebar-label">Dashboard</span>
+                </div>
+            </div>
+        </a>
+
+        <!-- FVM -->
+        <div>
+            <button onclick="toggleDropdown('fvm')" data-label="Fleet & Vehicle Management" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start hover:bg-gray-700">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Fleet & Vehicle Management</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="fvm" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Vehicle Registration & Inventory</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Maintenance Scheduling & Logs</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Fuel Consumption Tracking</a>
+            </div>
+        </div>
+
+        <!-- VRDS -->
+        <div>
+            <button onclick="toggleDropdown('vrds')" data-label="Vehicle Reservation" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start hover:bg-gray-700">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Vehicle Reservation</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="vrds" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Reservation Request Portal</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Dispatcher Approval & Assignment</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Trip Logging & Confirmation</a>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div>
+            <button onclick="toggleDropdown('performance')" data-label="Trip Performance" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start hover:bg-gray-700">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-id-badge"></i>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Trip Performance</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="performance" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Driver Profiles & Certification</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Trip Performance Reports</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Incident & Feedback Logging</a>
+            </div>
+        </div>
+
+        <!-- TCAO -->
+        <div>
+            <button onclick="toggleDropdown('tcao')" data-label="Cost Analysis" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start hover:bg-gray-700">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Cost Analysis</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="tcao" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Cost Breakdown per Trip</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Route Efficiency Analysis</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Fleet Utilization Report</a>
+            </div>
+        </div>
+
+        <!-- Mobile App -->
+        <div>
+            <button onclick="toggleDropdown('mobile')" data-label="Mobile Fleet App" class="flex items-center px-3 py-2 w-full rounded hover:bg-white/20 text-start hover:bg-gray-700">
+                <div class="w-full flex items-center">
+                    <div class="sidebar-icon pl-2">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="sidebar-label-wrapper flex-1 ml-3">Mobile Fleet App</div>
+                    <i class="fas fa-chevron-down text-xs sidebar-label-wrapper ml-auto"></i>
+                </div>
+            </button>
+            <div id="mobile" class="animated-dropdown pl-6 sidebar-dropdown space-y-1">
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Real-Time Vehicle Tracker</a>
+                <a href="#" class="block py-1 hover:bg-white/10 text-start sidebar-label-wrapper">Emergency & Alert System</a>
+            </div>
+        </div>
+
+    </nav>
+</div>
+
+<div id="sidebar-overlay" class="fixed inset-0 bg-black w-full bg-opacity-0 z-20 hidden md:hidden"></div>
+
+    <div class="flex pt-20 overflow-y-scroll h-screen [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <main class="main-content flex-1 ml-80 mr-40 p-6">
+            <h1 class="text-2xl font-semibold text-gray-800 mb-4 select-none">Welcome to Dashboard</h1>
+            <p class="text-gray-600 mb-6">Add your widgets and data here.</p>
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-gray-700">Dashboard content goes here.</p>
+            </div>
+        </main>
+    </div>
+
+
+<script>
+    const mobileToggle = document.getElementById('mobileSidebarToggle');
+    const collapseBtn = document.getElementById('collapseSidebar');
+    const sidebar = document.getElementById('sidebar-wrapper');
+    const overlay = document.getElementById('sidebar-overlay');
+    const dropdowns = document.querySelectorAll('.animated-dropdown');
+    const bellBtn = document.querySelector('[onclick="toggleNotifications()"]');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const userDropdownBtn = document.getElementById('userDropdownBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const tooltip = document.getElementById('sidebarTooltip');
+
+    let collapsed = false;
+
+    function toggleSidebarMobile() {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            dropdowns.forEach(drop => drop.classList.remove('open'));
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+    }
+
+    mobileToggle?.addEventListener('click', toggleSidebarMobile);
+    overlay?.addEventListener('click', toggleSidebarMobile);
+
+    collapseBtn?.addEventListener('click', () => {
+        collapsed = !collapsed;
+        sidebar.classList.toggle('w-80');
+        sidebar.classList.toggle('w-16');
+        sidebar.classList.toggle('sidebar-collapsed');
+        if (collapsed) dropdowns.forEach(drop => drop.classList.remove('open'));
+    });
+
+    function toggleDropdown(id) {
+        if (sidebar.classList.contains('sidebar-collapsed')) {
+            collapseBtn.click();
+            setTimeout(() => document.getElementById(id)?.classList.add('open'), 250);
+            return;
+        }
+        const el = document.getElementById(id);
+        if (el) {
+            const isOpen = el.classList.contains('open');
+            dropdowns.forEach(drop => drop.classList.remove('open'));
+            if (!isOpen) el.classList.add('open');
+        }
+    }
+
+    function toggleNotifications() {
+        notificationDropdown.classList.toggle('hidden');
+    }
+
+    function toggleUserDropdown() {
+        userDropdown.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+        if (!notificationDropdown.contains(e.target) && !bellBtn.contains(e.target)) {
+            notificationDropdown.classList.add('hidden');
+        }
+        if (!userDropdown.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+            userDropdown.classList.add('hidden');
+        }
+    });
+
+    document.querySelectorAll('.sidebar-icon').forEach(icon => {
+        icon.addEventListener('mouseenter', function () {
+            if (!sidebar.classList.contains('sidebar-collapsed')) return;
+            const parent = icon.closest('[data-label]');
+            if (!parent) return;
+            const label = parent.getAttribute('data-label');
+            if (!label) return;
+            tooltip.innerText = label;
+            tooltip.style.opacity = '1';
+            const rect = icon.getBoundingClientRect();
+            tooltip.style.top = `${rect.top + window.scrollY + rect.height / 2 - 10}px`;
+            tooltip.style.left = `${rect.right + 10}px`;
+        });
+        icon.addEventListener('mouseleave', function () {
+            tooltip.style.opacity = '0';
+        });
+    });
+</script>
+
+</body>
+
+</html>
